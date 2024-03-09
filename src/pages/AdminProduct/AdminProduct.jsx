@@ -6,45 +6,29 @@ import { useNavigate } from "react-router-dom";
 import defaultPicture from "../../assets/images/carrito.png";
 import formatDate from "../../utils/formatDate";
 
-
-
 const URL = import.meta.env.VITE_SERVER_URL;
 
 export default function AdminProduct() {
 	const { register, handleSubmit, setValue } = useForm();
-	// State to hold the product data *-Usamos el useStategancho para crear una variable de estado dbproducts y una función setDbUserspara actualizarla.
-	const [dbProducts, setDbProducts] = useState([]); // Estado() inicializado como un array vacio.
-	const [productId, setProductId] = useState(); // deshabilitar el Password al editar
+	const [dbProducts, setDbProducts] = useState([]);
+	const [productId, setProductId] = useState();
 	const [categories, setCategories] = useState([]);
-	const [totalButtons, setTotalButtons] = useState([]);
-	const [limit, setLimit] = useState(2);
 	const navigate = useNavigate();
 	const TOKEN = localStorage.getItem("token");
 
-	// Enviar datos(data) al back con body de la request POST y llamar al endpoint POST /products
 	async function submitedData(data) {
 		try {
-			// const formData = new FormData(); //FormData(multipart)armar a traves de una req.un formulario y enviado con metodo POST
-			// formData.append("producto", data.producto);
-			// formData.append("descripcion", data.descripcion);
-			// formData.append("precio", data.precio);
-			// formData.append("fecha", data.fecha);
-			// formData.append("image", data.image[0]);
-
-			// ------- lo de arriba es === a lo de abajo------------------------------------------------------
 			const formData = new FormData();
 			for (const key of Object.keys(data)) {
-				// -for Itero propiedades, que me va a devolver un array con los valores(propiedades) de mi objeto
 				if (key === "image") {
-					formData.append(key, data.image[0]); // para que me mi lista de archivos tome el indice 0
+					formData.append(key, data.image[0]);
 					continue;
 				}
 				formData.append(key, data[key]);
 			}
 
-			// -PUT: EDITAR (actualizar )producto
 			if (productId) {
-				if (!TOKEN) return; // si NO HAY TOKEN cancelo
+				if (!TOKEN) return;
 
 				const response = await axios.put(
 					`${URL}/products/${productId}`,
@@ -58,12 +42,10 @@ export default function AdminProduct() {
 				});
 				getProducts();
 				setProductId(null);
-				return; // para que mi codigo que sigue luego del if no se ejecute.
+				return;
 			}
 
-			// POST: CREAR producto
-			const response = await axios.post(`${URL}/products`, formData); // enviamos al back
-			// console.log(response);
+			const response = await axios.post(`${URL}/products`, formData);
 			Swal.fire({
 				icon: "success",
 				title: "Producto creado ",
@@ -78,7 +60,6 @@ export default function AdminProduct() {
 				text: "Algunos datos ingresados no son correctos",
 			});
 			if (error.response.status === 401) {
-				// logout()
 				localStorage.removeItem("currentUser");
 				localStorage.removeItem("token");
 				navigate("/");
@@ -86,25 +67,10 @@ export default function AdminProduct() {
 		}
 	}
 
-	// Obtener Usuarios
-	// valor de page si no recibo nada es 0
-	async function getProducts(page = 0) {
+	async function getProducts() {
 		try {
-			// bsck le mando queryparams :page, limit
-			const response = await axios.get(
-				`${URL}/products?page=${page}&limit=${limit}`,
-			);
+			const response = await axios.get(`${URL}/products`);
 			const products = response.data.products;
-			const total = response.data.total; // 6
-			// redondeo hacia arriba
-			const buttonsQuantity = Math.ceil(total / limit); // 6/2=3 botones
-
-			const arrayButtons = []; // itero en el template de react
-			for (let i = 0; i < buttonsQuantity; i++) {
-				arrayButtons.push(i);
-			}
-
-			setTotalButtons(arrayButtons);
 
 			setDbProducts(products);
 		} catch (error) {
@@ -125,16 +91,13 @@ export default function AdminProduct() {
 			confirmButtonText: "Borrar",
 			confirmButtonColor: "#e06262",
 			denyButtonText: `Cancelar`,
-			// reverseButtons: true, // invertir botones borrar y cancelar
 		}).then(async function (resultado) {
 			if (resultado.isConfirmed) {
 				try {
-					// const TOKEN = localStorage.getItem("token");
 					if (!TOKEN) return;
-					// console.log(`usuario a borrar ${id}`);
-					// Borrar Productos en la BD
+
 					await axios.delete(`${URL}/products/${id}`, {
-						headers: { authorization: TOKEN }, // objeto opciones, tiene la propiedad header{}
+						headers: { authorization: TOKEN },
 					});
 					Swal.fire({
 						icon: "success",
@@ -142,7 +105,7 @@ export default function AdminProduct() {
 						text: `El producto ${id} fue borrado correctamente`,
 						timer: 1500,
 					});
-					// Actualizar el estado de Productos
+
 					getProducts();
 				} catch (error) {
 					Swal.fire({
@@ -152,8 +115,8 @@ export default function AdminProduct() {
 					});
 					if (error.response.status === 401) return logout();
 				}
-			} // cierra if
-		}); // cierra then
+			}
+		});
 	}
 
 	function logout() {
@@ -162,23 +125,15 @@ export default function AdminProduct() {
 		navigate("/");
 	}
 
-	useEffect(
-		function () {
-			// controlo la carga de usuario
-			getProducts();
-			getCategories();
-			// prevengo el bucle infinito
-		},
-		[limit],
-	); // cuando el limite se actualice vuelva a llamar a getProducts
+	useEffect(function () {
+		getProducts();
+		getCategories();
+	});
 
 	async function getCategories() {
 		try {
 			const response = await axios.get("http://localhost:3000/categories");
 			const categoriesDB = response.data.categories;
-			// console.log(response);
-
-			// setear un estado que maneje las categorias RECIBIDAS DE BD
 			setCategories(categoriesDB);
 		} catch (error) {
 			console.log("No se pudieron obtener las categorias");
@@ -186,28 +141,24 @@ export default function AdminProduct() {
 	}
 
 	function setFormValue(product) {
-		// iteramos propiedades de los objetos
-		console.log(product);
 		setProductId(product._id);
 		setValue("producto", product.producto);
 		setValue("descripcion", product.description);
 		setValue("precio", product.price);
-		// setValue("fecha", formatDate(product.fecha));
-		setValue("image", product.image || ""); // si es null or undefined que se setee un string vacio
+		setValue("image", product.image || "");
 		setValue("active", product.active);
 		setValue("category", product.category || "");
 	}
 
-	// Buscador (Peticion) a mi servidor para buscar productos
 	async function handleSearch(e) {
 		try {
-			const search = e.target.value; // tomamos el evento del input
-			if (!search) getProducts(); // si mi input quedo vacio (""), que me traiga todos los productos
+			const search = e.target.value;
+			if (!search) getProducts();
 
-			if (search.length <= 2) return; // que busque solo a partir de 2 letras
+			if (search.length <= 2) return;
 			const response = await axios.get(`${URL}/products/search/${search}`);
 			const products = response.data.products;
-			setDbProducts(products); // actualizamos los productos buscados.
+			setDbProducts(products);
 		} catch (error) {
 			console.log(error);
 		}
@@ -215,10 +166,15 @@ export default function AdminProduct() {
 
 	return (
 		<>
+			<div className="title-container">
+				<h1 className="title-form">Registro de producto</h1>
+			</div>
+			<div className="hr-container">
+				<hr className="hr-form" />
+			</div>
 			<main className="main-container">
 				<div className="admin-container">
 					<section className="form-container">
-						<h2>Registro de productos</h2>
 						<form
 							id="user-form"
 							onSubmit={handleSubmit(submitedData)}
@@ -237,19 +193,19 @@ export default function AdminProduct() {
 								/>
 							</div>
 							<div className="input-group">
-								<label htmlFor="descripcion">Descripcion</label>
+								<label htmlFor="description">Descripcion</label>
 								<textarea
-									{...register("descripcion")}
-									id="descripcion"
+									{...register("description")}
+									id="description"
 									required
 								></textarea>
 							</div>
 							<div className="input-group">
-								<label htmlFor="precio">Precio</label>
+								<label htmlFor="price">Precio</label>
 								<input
 									type="number"
-									{...register("precio")}
-									id="precio"
+									{...register("price")}
+									id="price"
 									required
 								/>
 							</div>
@@ -271,7 +227,7 @@ export default function AdminProduct() {
 									id="image"
 								/>
 							</div>
-							<div className="active">
+							<div className="active input-group">
 								<label htmlFor="active">Activo</label>
 								<input type="checkbox" {...register("active")} id="active" />
 							</div>
@@ -289,30 +245,28 @@ export default function AdminProduct() {
 
 							<button
 								type="submit"
-								className={productId ? "btn-success" : "btn-form"}
-							>
-								{
-									productId ? "Editar producto" : "Agregar producto" // existe id Editar, no existe Añadir
+								className={
+									productId ? "btn-form btn-success btn-editar" : "btn-form"
 								}
+							>
+								{productId ? "Editar producto" : "Agregar producto"}
 							</button>
 						</form>
 					</section>
 
-					{/* TABLA */}
 					<section className="table-container">
 						<div className="flex-between">
-							{/* <h2>Tabla de Productos</h2> */}
 							<div className="input-group">
 								<input
 									type="text"
 									className="input-search"
 									id="search"
 									placeholder="Buscar por nombre"
-									onKeyUp={handleSearch} // ejecuta la funcion y manda el evento keyup(cada vez que aprieta la tecla)
+									onKeyUp={handleSearch}
 								/>
 							</div>
 						</div>
-						<table className="user-table" id="userTable">
+						<table className="product-table" id="userTable">
 							<thead>
 								<tr className="table-head">
 									<th>Imagen</th>
@@ -330,7 +284,7 @@ export default function AdminProduct() {
 										<tr key={product._id}>
 											<td>
 												<img
-													className="table-picture"
+													className="table-img"
 													src={
 														product.image
 															? `${URL}/images/products/${product.image}`
@@ -339,8 +293,8 @@ export default function AdminProduct() {
 												/>
 											</td>
 											<td> {product.producto}</td>
-											<td> {product.descripcion} </td>
-											<td> {product.precio}</td>
+											<td> {product.description} </td>
+											<td> {product.price}</td>
 											<td> {formatDate(product.fecha)}</td>
 											{
 												<td>
@@ -353,7 +307,7 @@ export default function AdminProduct() {
 
 											<td>
 												<button
-													className="action-btn btn-danger"
+													className="action-btn btn-danger btn-delete btn"
 													onClick={() => deleteProduct(product._id)}
 													title="Borrar producto"
 												>
@@ -361,7 +315,7 @@ export default function AdminProduct() {
 												</button>
 
 												<button
-													className="action-btn btn-edit"
+													className="action-btn btn-edit btn btn-edit"
 													onClick={() => setFormValue(product)}
 													title="Editar producto"
 												>
@@ -373,89 +327,10 @@ export default function AdminProduct() {
 								})}
 							</tbody>
 						</table>
-						<div>
-						</div>
+						<div></div>
 					</section>
 				</div>
 			</main>
 		</>
 	);
 }
-
-
-
-
-
-
-
-
-
-
-
-// import { useForm } from "react-hook-form";
-
-
-// export default function AdminProduct() {
-// 	const { register, handleSubmit } = useForm();
-
-// 	async function submiteData(data) {
-// 		console.log(data);
-// 	}
-
-// 	return (
-// 		<>
-// 			<div className="admin-dashboard">
-// 				<div className="form-container">
-// 					<h2>Carga de producto</h2>
-// 					<form className="admin-form" onSubmit={handleSubmit(submiteData)}>
-//             <div className="input-group">
-//               <label htmlFor="">Producto</label>
-// 						<input type="text" className="admin-input" {...register("name")} />
-//             </div>
-//             <div className="input-group">
-// 						<label htmlFor="">Precio</label>
-//             <input
-// 							type="number"
-// 							className="admin-input"
-// 							{...register("price")}
-// 						/>
-//             </div>
-//             <div className="input-group">
-//               <label htmlFor="">Descripción</label>
-// 						<textarea
-// 							className="admin-input"
-// 							{...register("description")}
-// 						></textarea>
-//             </div>
-//             <div className="input-group">
-//               <label htmlFor="">Imagen</label>
-// 						<input type="url" className="admin-input" {...register("image")} />
-//             </div>
-//             <div className="input-group">
-//               <label htmlFor="">Activo</label>
-// 						<input
-// 							type="checkbox"
-// 							className="admin-input"
-// 							{...register("active")}
-// 						/>
-//                         Activo
-//             </div>
-//             <div className="input-group">
-//               <label htmlFor="">Categoría</label>
-// 						<select className="admin-input" {...register("category")}>
-// 							<option value="consoles_sony">Consolas Playstation</option>
-// 							<option value="consoles_microsoft">Console XBOX</option>
-// 							<option value="pc">Computadoras</option>
-// 							<option value="accesories">Accesorios</option>
-// 						</select>
-//             </div>
-// 						<button type="submit">Crear producto</button>
-// 					</form>
-// 				</div>
-// 				<div className="table-container">
-// 					<h2>Tabla de productos</h2>
-// 				</div>
-// 			</div>
-// 		</>
-// 	);
-// }

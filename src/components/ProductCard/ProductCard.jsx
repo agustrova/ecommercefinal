@@ -1,59 +1,32 @@
-import formatDate from "@/utils/formatDate";
-import { NavLink } from "react-router-dom";
-
 const URL = import.meta.env.VITE_SERVER_URL;
 
 export default function ProductCards({ product }) {
-	// console.log(product.image);
-
 	return (
 		<>
 			<article className="card" key={product._id}>
-				<div className="imgBx">
-					<img
-						src={`${URL}/images/products/${product.image}`}
-						alt=""
-						className="box-img"
-						loading="lazy"
-					/>
-				</div>
 				<div className="card-container">
-					<div className="card-info">
-						<h2 className="card-info-title">{product.producto} </h2>
-						<p className="card-info-text">{product.descripcion}</p>
-					</div>
-					<div className="card-values">
-						<div className="card-date"> {formatDate(product.fecha)} </div>
-						<div className="card-price">{product.precio} </div>
-					</div>
+					<header className="card-header">
+						<img
+							src={`${URL}/images/products/${product.image}`}
+							alt=""
+							className="box-img"
+							loading="lazy"
+						/>
+					</header>
+					<div className="card-body">
+						<p className="card-name">{product.producto}</p>
+						<p className="card-description">{product.description}</p>
+						<div className="card-values">
+							<div className="card-newprice">${product.price} </div>
+						</div>
 
-					<footer className="card-footer">
-						<NavLink							
-							className="see-btn"
-							to={`/product-detail/${product._id}`}
-						>
-							Ver más
-						</NavLink>
-						<button className="card-btn" >
-							Comprar
-						</button>
-					</footer>
+						<footer className="card-footer">
+							<button className="card-btn vermas-btn">Ver más</button>
+							<button className="card-btn">Comprar</button>
+						</footer>
+					</div>
 				</div>
 			</article>
 		</>
 	);
 }
-
-
-
-// import React from 'react'
-
-// export const ProductCard = ({user}) => {
-//     return (
-//         <div className="card">
-//         <h2>{user.name}</h2>
-//         <p>{user.age}</p>
-//         <p>{user.email}</p>
-//     </div>
-//     )
-// }

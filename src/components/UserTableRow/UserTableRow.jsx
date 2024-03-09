@@ -2,21 +2,18 @@ import defaultPicture from "../../assets/images/default-img-usr.jpg";
 const URL = import.meta.env.VITE_SERVER_URL;
 
 export const UserTableRow = ({ usr, deleteUser, setFormValue }) => {
-
-	
-
 	return (
-		<table className="user-table">
-			<tbody className="tbody-contenedor">
 		<tr className="table-body" key={usr._id}>
 			<td className="table-img">
-				<img className="user-img"
+				<img
+					className="user-img"
 					src={usr.image ? `${URL}/images/users/${usr.image}` : defaultPicture}
 					alt={`${usr.name} profile picture`}
 				/>
 			</td>
 			<td className="table-name">{usr.name.toUpperCase()}</td>
 			<td className="table-email">{usr.email}</td>
+			<td className="table-age">{usr.age}</td>
 			<td className="table-location">
 				{usr.location ? usr.location : <span className="no-data">NO DATA</span>}
 			</td>
@@ -35,7 +32,5 @@ export const UserTableRow = ({ usr, deleteUser, setFormValue }) => {
 				</div>
 			</td>
 		</tr>
-		</tbody>
-		</table>
 	);
 };

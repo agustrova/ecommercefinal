@@ -6,10 +6,9 @@ import { UserContext } from "../../context/UserContext";
 
 const URL = import.meta.env.VITE_SERVER_URL;
 
-
 export const UserProvider = ({ children }) => {
 	const [user, setUser] = useState(null);
-  const [admin, setAdmin] = useState(false)
+	const [admin, setAdmin] = useState(false);
 	const navigate = useNavigate();
 
 	async function login(data) {
@@ -21,8 +20,8 @@ export const UserProvider = ({ children }) => {
 			localStorage.setItem("token", token);
 			localStorage.setItem("currentUser", JSON.stringify(user));
 
-      const isAdmin = user.role === 'ADMIN_ROLE'
-      setAdmin(isAdmin)
+			const isAdmin = user.role === "ADMIN_ROLE";
+			setAdmin(isAdmin);
 
 			setUser(user);
 
@@ -50,9 +49,9 @@ export const UserProvider = ({ children }) => {
 		setUser(null);
 	}
 
-  return (
-    <UserContext.Provider value={{ user, admin, login, logout }}>
-        { children }
-    </UserContext.Provider>
-)
+	return (
+		<UserContext.Provider value={{ user, admin, login, logout }}>
+			{children}
+		</UserContext.Provider>
+	);
 };

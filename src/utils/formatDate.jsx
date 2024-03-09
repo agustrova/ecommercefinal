@@ -9,5 +9,3 @@ export default function (fecha) {
 
 	return dateFormat.format(date);
 }
-
-// <td> {formatDate(product.fecha)} </td>;

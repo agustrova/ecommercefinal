@@ -1,92 +1,35 @@
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { UserTable } from "../../components/UserTable/UserTable";
+import { useNavigate } from "react-router-dom";
 
-const URL = import.meta.env.VITE_SERVER_URL;
 const TOKEN = localStorage.getItem("token");
+const URL = import.meta.env.VITE_SERVER_URL;
 
-export default function AdminUser() {
-	const [dbUsers, setDbUsers] = useState([]);
-	const [userId, setUserId] = useState();
-
-	//	Obtener usuarios
-	async function getUsers() {
-		try {
-			const response = await axios.get(`${URL}/users`);
-			const users = response.data.users;
-			setDbUsers(users);
-		} catch (error) {
-			console.log(error);
-			Swal.fire({
-				title: "No se pudieron obtener los Usuarios",
-				icon: "error",
-			});
-		}
-	}
-
-	async function deleteUser(id) {
-		Swal.fire({
-			title: `Confirma borrar este usuario?`,
-			text: `Realmente desea borrar el usuario ${id}`,
-			icon: "warning",
-			showCancelButton: true,
-			confirmButtonText: "Borrar",
-			cancelButtonText: `Cancelar`,
-			confirmButtonColor: "#d33",
-			reverseButtons: true,
-		}).then(async function (resultado) {
-			if (resultado.isConfirmed) {
-				try {
-					if (!TOKEN) return;
-					await axios.delete(`${URL}/users/${id}`, {
-						headers: { authorization: TOKEN },
-					});
-
-					Swal.fire({
-						title: `Usuario Borrado`,
-						text: `El user ${id} fue borrado correctamente`,
-						icon: "success",
-						timer: 1500,
-					});
-					getUsers();
-				} catch (error) {
-					console.log(error);
-					Swal.fire("Error al borrar", "No se pudo borrar el usuario", "error");
-				}
-			}
-		});
-	}
-
-	useEffect(() => {
-		getUsers();
-	}, []);
-
+const UserForm = ({ getUsers, formValue, userId, setUserId }) => {
 	const { register, handleSubmit, setValue } = useForm();
+	const navigate = useNavigate();
 
 	async function submitedData(data) {
 		try {
 			const formData = new FormData();
-
-			formData.append("name", data.name);
-			formData.append("email", data.email);
-			formData.append("password", data.password);
-			formData.append("age", data.age);
-			formData.append("location", data.location);
-			formData.append("image", data.image[0]);
+			for (const key of Object.keys(data)) {
+				if (key === "image") {
+					formData.append(key, data.image[0]);
+					continue;
+				}
+				formData.append(key, data[key]);
+			}
 
 			if (userId) {
 				if (!TOKEN) return;
 				const response = await axios.put(`${URL}/users/${userId}`, formData, {
-					headers: {
-						authorization: TOKEN,
-					},
+					headers: { authorization: TOKEN },
 				});
 				Swal.fire({
-					title: "Usuario editado",
-					text: `El usuario ${response.data.user.name} fue editado correctamente`,
 					icon: "success",
+					title: "Usuario editado correctamente ",
+					text: `El usuario ${response.data.user?.name} fue editado correctamente`,
 				});
 				getUsers();
 				setUserId(null);
@@ -95,62 +38,45 @@ export default function AdminUser() {
 
 			const response = await axios.post(`${URL}/users`, formData);
 			Swal.fire({
-				title: "Usuario creado",
-				text: `El usuario ${response.data.user?.name} fue creado correctamente`,
 				icon: "success",
+				title: "Usuario creado ",
+				text: `El usuario ${response.data.user?.name} fue creado correctamente`,
 			});
-			getUsers();
-			setFormValue();
+			if (getUsers) {
+				getUsers();
+			}
 		} catch (error) {
+			console.log(error);
 			Swal.fire({
 				icon: "error",
-				title: "No se creó el usuario",
-				text: "Alguno de los datos ingresados no es crrecto",
+				title: "No se creo usuario",
+				text: "Algunos datos ingresados no son correctos",
 			});
+			if (error.response.status === 401) {
+				// logout();
+				localStorage.removeItem("currentUser");
+				localStorage.removeItem("token");
+				navigate("/");
+			}
 		}
 	}
 
-	function setFormValue(user) {
-		setUserId(user?._id || null);
-
-		setValue("name", user?.name || "");
-		setValue("email", user?.email || "");
-		setValue("age", user?.age || "");
-		setValue("image", user?.image || "");
-	}
-
-	async function handleSearch(e) {
-		try {
-			const search = e.target.value;
-
-			if (!search) getUsers();
-
-			if (search.length <= 2) {
-				return;
-			}
-
-			const response = await axios.get(`${URL}/users/search/${search}`);
-
-			const users = response.data.users;
-
-			setDbUsers(users);
-		} catch (error) {}
+	if (formValue) {
+		setValue("name", formValue.name);
+		setValue("email", formValue.email);
+		setValue("password", formValue.password);
+		setValue("location", formValue.location || "");
+		setValue("age", formValue.age);
+		setValue("image", formValue.image || "");
 	}
 
 	return (
 		<>
-			<div className="title-container">
-				<h1 className="title-form">Registro de usuarios</h1>
-			</div>
-			<div className="hr-container">
-				<hr className="hr-form" />
-			</div>
-
 			<main className="main-container">
 				<div className="admin-container">
 					<section className="form-container">
 						<form
-							className="user-form"
+							id="user-form"
 							onSubmit={handleSubmit(submitedData)}
 							encType="multipart/form-data"
 						>
@@ -158,22 +84,25 @@ export default function AdminUser() {
 								<label htmlFor="">Nombre completo</label>
 								<input
 									type="text"
+									placeholder="Nombre y apellido"
 									className="admin-input"
 									{...register("name")}
 								/>
 							</div>
 							<div className="input-group">
-								<label htmlFor="">Email</label>
+								<label htmlFor="">Correo electrónico</label>
 								<input
 									type="email"
+									placeholder="Correo electrónico"
 									className="admin-input"
 									{...register("email")}
 								/>
 							</div>
 							<div className="input-group">
-								<label htmlFor="">Pasword</label>
+								<label htmlFor="">Contraseña</label>
 								<input
 									type="text"
+									placeholder="Contraseña"
 									className="admin-input"
 									disabled={userId}
 									{...register("password")}
@@ -183,13 +112,14 @@ export default function AdminUser() {
 								<label htmlFor="">Edad</label>
 								<input
 									type="number"
+									placeholder="Edad"
 									className="admin-input"
 									{...register("age")}
 								/>
 							</div>
 							<div className="input-group">
 								<label htmlFor="location">Localidad</label>
-								<select {...register("location")} id="location" required>
+								<select {...register("location")} required>
 									<option value=""></option>
 									<option value="Buenos Aires">Buenos Aires</option>
 									<option value="CABA">
@@ -230,33 +160,17 @@ export default function AdminUser() {
 									{...register("image")}
 								/>
 							</div>
-
 							<button
 								type="submit"
-								className={
-									userId ? "btn-form btn-success btn-editar" : "btn-form"
-								}
+								className={userId ? "btn-success" : "btn-form"}
 							>
-								{userId ? "Editar usuario" : "Añadir usuario"}
+								{userId ? "Editar usuario" : "Agregar Usuario"}
 							</button>
 						</form>
 					</section>
-
-					<div className="contenedor-table-container">
-						<div className="flex-between">
-							<div className="input-group">
-								<label htmlFor="search">Buscar usuario</label>
-								<input type="text" id="search" onKeyUp={handleSearch} />
-							</div>
-						</div>
-						<UserTable
-							users={dbUsers}
-							deleteUser={deleteUser}
-							setFormValue={setFormValue}
-						/>
-					</div>
 				</div>
 			</main>
 		</>
 	);
-}
+};
+export default UserForm;

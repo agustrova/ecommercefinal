@@ -16,25 +16,35 @@ export default function Login() {
 	}
 
 	return (
-		<div className="login-container">
-			<form className="login-form" onSubmit={handleSubmit}>
-				<h1>Ingresar</h1>
-
-				<label>Correo electrónico</label>
-				<input
-					name="email"
-					type="text"
-					placeholder="Correo electrónico"
-					required
-				/>
-
-				<label>Contraseña</label>
-				<input name="password" type="password" placeholder="Contraseña" />
-
-				<button type="submit" className="button">
-					Ingresar
-				</button>
-			</form>
-		</div>
+		<>
+			<div className="title-container">
+				<h1 className="title-form">Iniciar sesión</h1>
+			</div>
+			<div className="hr-container">
+				<hr className="hr-form" />
+			</div>
+			<main className="contenedor-form">
+				<section className="form-container">
+					<form className="user-form" onSubmit={handleSubmit}>
+						<div className="input-group">
+							<label>Correo electrónico</label>
+							<input
+								name="email"
+								type="text"
+								placeholder="Correo electrónico"
+								required
+							/>
+						</div>
+						<div className="input-group">
+							<label>Contraseña</label>
+							<input name="password" type="password" placeholder="Contraseña" />
+						</div>
+						<button type="submit" className="btn-form">
+							Ingresar
+						</button>
+					</form>
+				</section>
+			</main>
+		</>
 	);
 }

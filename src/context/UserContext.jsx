@@ -9,7 +9,8 @@ const UserContext = createContext();
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
-	const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("currentUser"))
+	const [user, setUser] = useState(() =>
+		JSON.parse(localStorage.getItem("currentUser")),
 	);
 	const [token, setToken] = useState(() => localStorage.getItem("token"));
 	const [admin, setAdmin] = useState(
@@ -28,7 +29,7 @@ export const UserProvider = ({ children }) => {
 			localStorage.setItem("token", token);
 
 			setUser(user);
-			setAdmin(user.role === "ADMIN_ROLE")
+			setAdmin(user.role === "ADMIN_ROLE");
 			setToken(token);
 			if (user.role === "ADMIN_ROLE") {
 				setAdmin(true);

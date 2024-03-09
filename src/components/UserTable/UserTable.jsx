@@ -9,6 +9,7 @@ export const UserTable = ({ users, deleteUser, setFormValue }) => {
 						<th>Imagen</th>
 						<th>Nombre</th>
 						<th>Email</th>
+						<th>Edad</th>
 						<th>Localidad</th>
 						<th>Rol</th>
 						<th>Acciones</th>
@@ -16,7 +17,12 @@ export const UserTable = ({ users, deleteUser, setFormValue }) => {
 				</thead>
 				<tbody>
 					{users.map((usr) => (
-						<UserTableRow key={usr._id} usr={usr} deleteUser={deleteUser} setFormValue={setFormValue} />
+						<UserTableRow
+							key={usr._id}
+							usr={usr}
+							deleteUser={deleteUser}
+							setFormValue={setFormValue}
+						/>
 					))}
 				</tbody>
 			</table>

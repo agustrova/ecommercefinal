@@ -8,7 +8,7 @@ export default function Header() {
 	const isAdmin = user?.role === "ADMIN_ROLE";
 
 	return (
-		<header className="header">
+		<header className="main-header">
 			<input className="input-check" type="checkbox" id="check-menu" />
 			<label className="burger-menu" htmlFor="check-menu">
 				<span className="burger-line"></span>
@@ -43,33 +43,45 @@ export default function Header() {
 							Contacto
 						</NavLink>
 					</li>
-				</ul>
-        {user ? (
-				<NavLink onClick={() => logout()}>Logout</NavLink>
-			) : (
-				<NavLink className="nav-link" to="/Login">
-					Iniciar sesión
-				</NavLink>
-			)}
 
-			{isAdmin && (
-				<>
-					<NavLink className="nav-link" to="/AdminProduct">
-						Admin Product
-					</NavLink>
-					<NavLink className="nav-link" to="/AdminUser">
-						Admin User
-					</NavLink>
-				</>
-			)}
+					{isAdmin && (
+						<>
+							<li className="nav-item">
+								<NavLink className="nav-link" to="/AdminProduct">
+									Admin Product
+								</NavLink>
+							</li>
+							<li className="nav-item">
+								<NavLink className="nav-link" to="/AdminUser">
+									Admin User
+								</NavLink>
+							</li>
+						</>
+					)}
+
+					{user ? (
+<>
+						<section className="user-info">
+							<li className="nav-link">
+						<div className="user-name">{user && <p>{user.name}</p>}</div>
+						</li>
+						<li className="nav-link logout-lista">
+							<NavLink className="link-logout" onClick={() => logout()}>
+								Logout
+							</NavLink>
+						</li>
+						</section>
+						</>
+					) : (
+						<li>
+							<NavLink className="nav-link" to="/Login">
+								Iniciar sesión
+							</NavLink>
+						</li>
+					)}
+				</ul>
 			</nav>
-      <div className="user-info">
-        {user && (
-          <p>
-            {user.id}
-          </p>
-        )}
-      </div>
+
 		</header>
 	);
 }
